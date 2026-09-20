@@ -1,81 +1,101 @@
-# Feature Group contract guide
+# Guia de contrato de Feature Group
 
-Read this reference when the user requests a specification, contract, implementation, or review of an existing contract.
+Leia esta referência quando o usuário solicitar uma especificação, contrato,
+implementação ou revisão de um contrato existente.
 
-## Contract principles
+## Princípios do contrato
 
-The contract is vendor-neutral unless a target platform is explicitly selected. It must make semantic and operational decisions inspectable and testable. A physical table definition alone is not a Feature Group contract.
+O contrato é vendor-neutral, a menos que uma plataforma de destino seja
+selecionada explicitamente. Ele deve tornar decisões semânticas e operacionais
+inspecionáveis e testáveis. Uma definição física de tabela, sozinha, não é um
+contrato de Feature Group.
 
-Start from the [Feature Group contract template](../assets/feature-group-contract.yaml) and preserve its major sections. Remove an optional field only when it truly does not apply; use `needs_confirmation` for required decisions that remain open.
+Comece pelo [template de contrato de Feature Group](../assets/feature-group-contract.yaml)
+e preserve suas seções principais. Remova um campo opcional somente quando ele
+realmente não se aplicar; use `needs_confirmation` para decisões obrigatórias que
+continuarem abertas.
 
-## Required decisions
+## Decisões obrigatórias
 
-### Identity and grain
+### Identidade e grão
 
-- `name` is entity-and-concept oriented, not model-oriented.
-- `entity.name` identifies the subject.
-- `entity.business_keys` defines stable identity.
-- `grain.description` states what one row means.
-- `grain.record_keys` is sufficient to make a record unique, including temporal or secondary keys where necessary.
-- `lookup.keys` states what consumers provide for lookup and how historical reference time is supplied.
+- `name` deve ser orientado a entidade e conceito, não ao modelo.
+- `entity.name` identifica o sujeito.
+- `entity.business_keys` define a identidade estável.
+- `grain.description` declara o que uma linha representa.
+- `grain.record_keys` deve ser suficiente para tornar um registro único,
+  incluindo chaves temporais ou secundárias quando necessário.
+- `lookup.keys` declara o que os consumidores fornecem para lookup e como o
+  reference time histórico é informado.
 
-### Time
+### Tempo
 
-- `event_timestamp` identifies when the value is valid.
-- `available_at` identifies when it became available when late knowledge is possible; otherwise document why it is unnecessary and what lag policy applies.
-- `timezone`, window boundaries, refresh cadence, freshness SLO, late-event policy, backfill, and retention are explicit.
-- A static source attribute may still need historization. A computed age is temporal even if its source date is stable.
+- `event_timestamp` identifica quando o valor é válido.
+- `available_at` identifica quando o valor se tornou disponível quando o
+  conhecimento puder atrasar; caso contrário, documente por que ele é
+  desnecessário e qual lag policy se aplica.
+- `timezone`, limites da janela, refresh cadence, freshness SLO, late-event
+  policy, backfill e retention devem ser explícitos.
+- Um atributo estático de fonte ainda pode exigir historization. Uma idade
+  calculada é temporal mesmo quando sua data de origem é estável.
 
 ### Features
 
-Each feature declares:
+Cada feature declara:
 
-- type, definition, kind, expression or transformation reference;
-- sources, filters, grain, unit, window, null/default behavior;
-- temporal fields and dependencies;
-- sensitivity classification and validation rules.
+- tipo, definição, kind e referência à expressão ou transformação;
+- fontes, filtros, grão, unidade, janela, comportamento de nulo/default;
+- campos temporais e dependências;
+- classificação de sensibilidade e regras de validação.
 
-Do not include entity keys, audit fields, targets, or sample controls in `features`. Keep them in their dedicated sections.
+Não inclua entity keys, audit fields, targets ou sample controls em `features`.
+Mantenha-os em suas seções próprias.
 
-### Operation and serving
+### Operação e serving
 
-- State offline and online requirements independently. Online is optional.
-- Define update mode, idempotency key, correction policy, and out-of-order precedence.
-- Define owner, access class, source lineage, transformation version, schema compatibility, consumers, and deprecation rules.
+- Declare os requisitos offline e online de forma independente. Online é
+  opcional.
+- Defina update mode, idempotency key, correction policy e precedência para
+  dados out-of-order.
+- Defina owner, access class, lineage da fonte, versão da transformação,
+  compatibilidade de schema, consumidores e regras de deprecation.
 
-### Quality
+### Qualidade
 
-At minimum, specify tests for:
+No mínimo, especifique testes para:
 
-- key uniqueness and non-nullness;
-- referential or entity coverage expectations;
-- types, units, ranges, null ratios, and allowed values;
-- freshness and late-event rate;
-- window boundary correctness;
+- unicidade e não nulidade das chaves;
+- expectativas de cobertura referencial ou de entidade;
+- tipos, unidades, intervalos, proporções de nulo e valores permitidos;
+- freshness e taxa de late-event;
+- correção dos limites da janela;
 - point-in-time leakage;
-- parity between original and decomposed calculations;
-- offline/online parity when applicable.
+- paridade entre os cálculos original e decomposto;
+- offline/online parity quando aplicável.
 
-## Change classification
+## Classificação de mudanças
 
-| Change | Expected treatment |
+| Mudança | Tratamento esperado |
 |---|---|
-| Add an optional feature | Compatible minor version when consumers are unaffected |
-| Fix logic that changes historical values | Semantic version and impact/backfill plan |
-| Rename or remove a feature | Deprecation period and consumer migration |
-| Change type, unit, filter, grain, or window | Breaking change; never silent |
-| Change owner or access classification | Governance review before publication |
+| Adição de feature opcional | Versão minor compatível quando consumidores não forem afetados |
+| Correção de lógica que altera valores históricos | Versão semântica e plano de impacto/backfill |
+| Renomeação ou remoção de feature | Período de deprecation e migração dos consumidores |
+| Mudança de tipo, unidade, filtro, grão ou janela | Breaking change; nunca silenciosa |
+| Mudança de owner ou access classification | Revisão de governança antes da publicação |
 
-## Publication gate
+## Gate de publicação
 
-A contract cannot be `publishable` while any of these are unresolved:
+Um contrato não pode ser `publishable` enquanto qualquer item abaixo estiver
+indefinido:
 
-- entity identity or grain;
-- feature versus target classification;
-- event-time or availability semantics;
-- business definition or critical filters;
-- owner or access classification;
-- refresh/freshness obligation;
-- validation of uniqueness and temporal correctness.
+- identidade da entidade ou grão;
+- classificação entre feature e target;
+- semântica de event-time ou availability;
+- definição de negócio ou filtros críticos;
+- owner ou access classification;
+- obrigação de refresh/freshness;
+- validação de unicidade e correção temporal.
 
-Use `ready_for_review` when the contract is complete but still awaits domain approval or data execution. Use `draft` when critical decisions are still assumptions.
+Use `ready_for_review` quando o contrato estiver completo, mas ainda aguardar
+aprovação de domínio ou execução de dados. Use `draft` quando decisões críticas
+ainda forem hipóteses.

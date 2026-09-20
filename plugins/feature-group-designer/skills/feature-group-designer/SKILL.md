@@ -1,72 +1,122 @@
 ---
 name: feature-group-designer
-description: Analyze a data scientist's SQL query to design, specify, review, or implement reusable Feature Groups and their contracts. Use for SQL-to-Feature-Group decomposition, feature inventories, grain and entity analysis, point-in-time safety, grouping decisions, contract authoring, and implementation planning. Do not use to treat a model dataset, CTE, or source table as an automatic Feature Group boundary.
+description: Analisa uma query SQL de cientista de dados para desenhar, especificar, revisar ou implementar Feature Groups reutilizáveis e seus contratos. Use para decomposição SQL-to-Feature-Group, inventário de features, análise de grão e entidade, point-in-time safety, decisões de agrupamento, autoria de contratos e planejamento de implementação. Não trate um model dataset, CTE ou source table como uma fronteira automática de Feature Group.
 ---
 
 # Feature Group Designer
 
-Transform a model-oriented SQL query into an auditable Feature Group design. Work from the query's actual expressions and lineage, distinguish evidence from assumptions, and make grain boundaries visible before grouping features.
+Transforme uma query SQL orientada a modelo em um design auditável de Feature
+Groups. Trabalhe a partir das expressões e da lineage real da query, diferencie
+evidências de hipóteses e torne as fronteiras de grão visíveis antes de agrupar
+features.
 
-## Accept the input
+## Aceite da entrada
 
-- Accept SQL pasted in the conversation or a local SQL file path.
-- Read the complete query before proposing groups. Follow local SQL dependencies only when they are needed to resolve an expression or source and are available within the user's authorized scope.
-- Never require a database connection merely to perform static design analysis.
-- If the target platform is not specified, produce vendor-neutral contracts and an implementation plan. Do not invent product-specific syntax.
-- Match the user's language; default to Brazilian Portuguese when the user writes in Portuguese.
+- Aceite SQL colado na conversa ou o caminho de um arquivo SQL local.
+- Leia a query completa antes de propor grupos. Siga as dependências locais de
+  SQL somente quando forem necessárias para resolver uma expressão ou fonte e
+  estiverem dentro do escopo autorizado pelo usuário.
+- Nunca exija conexão com banco para realizar análise estática de design.
+- Se a plataforma de destino não for especificada, produza contratos
+  vendor-neutral e um plano de implementação. Não invente sintaxe específica de
+  produto.
+- Responda no idioma do usuário; quando ele escrever em português, use PT-BR.
 
-## Choose the requested depth
+## Escolha a profundidade solicitada
 
-- **Analyze:** inventory the query, expose grains, lineage, risks, and candidate groups without creating implementation artifacts.
-- **Design:** perform the analysis and propose Feature Groups with boundary rationales and draft contracts. This is the default.
-- **Create:** additionally create contract and transformation artifacts. Only generate platform-specific resources when the platform and required operational settings are known or explicitly marked as assumptions.
-- **Review:** evaluate an existing Feature Group or contract against the same criteria and report concrete defects and corrections.
+- **Analyze:** inventarie a query e exponha grãos, lineage, riscos e grupos
+  candidatos sem criar artefatos de implementação.
+- **Design:** faça a análise e proponha Feature Groups com justificativas de
+  fronteira e contratos preliminares. Este é o modo padrão.
+- **Create:** além do Design, crie artefatos de contrato e transformação. Gere
+  recursos específicos de plataforma somente quando a plataforma e as
+  configurações operacionais necessárias forem conhecidas ou estiverem marcadas
+  explicitamente como hipóteses.
+- **Review:** avalie um Feature Group ou contrato existente segundo os mesmos
+  critérios e reporte defeitos concretos e correções.
 
-## Execute the workflow
+## Execute o fluxo de trabalho
 
-For SQL analysis or design, read [references/decomposition-method.md](references/decomposition-method.md) and follow it in order.
+Para análise ou design de SQL, leia e siga, na ordem, [references/decomposition-method.md](references/decomposition-method.md).
 
-1. Establish the query's purpose, final output grain, prediction/reference timestamp, and target. Infer provisionally when necessary and mark each inference.
-2. Inventory final output expressions and classify every item as identifier, time, feature, target/label, request-time input, control field, or non-feature output.
-3. Trace each candidate feature through CTEs, joins, filters, aggregations, windows, and source columns. Preserve business filters such as exclusions and status predicates.
-4. Write an explicit grain contract for every candidate relation and Feature Group. Compare incompatible grains in a table before clustering.
-5. Form semantic candidates only after entity and grain are known. Then test temporal, operational, governance, ownership, and reuse compatibility.
-6. Separate targets from published features. Classify base, aggregated, derived, and request-time features and record their dependencies.
-7. Design point-in-time behavior using both event validity and, when arrival can be delayed, availability time. Treat unresolved temporal semantics as a publication blocker.
-8. Produce the requested deliverables using [references/deliverables.md](references/deliverables.md).
+1. Estabeleça o objetivo da query, o grão final da saída, o timestamp de
+   prediction/reference e o target. Quando necessário, faça uma inferência
+   provisória e marque-a como tal.
+2. Faça o inventário das expressões da saída final e classifique cada item como
+   identifier, time, feature, target/label, request-time input, control field ou
+   non-feature output.
+3. Rastreie cada feature candidata pelos CTEs, joins, filtros, agregações,
+   janelas e colunas de origem. Preserve filtros de negócio, como exclusões e
+   predicados de status.
+4. Escreva um contrato explícito de grão para cada relação candidata e cada
+   Feature Group. Compare os grãos incompatíveis em uma tabela antes de agrupar.
+5. Forme candidatos semânticos somente depois de conhecer entidade e grão. Em
+   seguida, teste compatibilidade temporal, operacional, de governança, de
+   ownership e de reuso.
+6. Separe targets de features publicadas. Classifique features base, agregadas,
+   derivadas e request-time e registre suas dependências.
+7. Projete o comportamento de point-in-time usando validade do evento e,
+   quando a chegada puder atrasar, availability time. Trate semântica temporal
+   não resolvida como bloqueio para publicação.
+8. Produza as entregas solicitadas usando [references/deliverables.md](references/deliverables.md).
 
-For a contract or creation request, also read [references/contract-guide.md](references/contract-guide.md). Start from [assets/feature-group-contract.yaml](assets/feature-group-contract.yaml) rather than inventing a smaller contract.
+Para uma solicitação de contrato ou criação, leia também
+[references/contract-guide.md](references/contract-guide.md). Comece pelo
+template [assets/feature-group-contract.yaml](assets/feature-group-contract.yaml)
+em vez de inventar um contrato menor.
 
-## Apply boundary rules
+## Aplique as regras de fronteira
 
-A Feature Group is the smallest reusable family of features that shares:
+Um Feature Group é a menor família reutilizável de features que compartilha:
 
-- the same entity and compatible business identity;
-- the same row grain and record key;
-- one nameable semantic concept;
-- compatible event-time, availability, window, and late-data semantics;
-- compatible refresh, freshness SLO, serving mode, retention, and backfill lifecycle;
-- compatible ownership, access classification, and schema evolution policy.
+- a mesma entidade e uma business identity compatível;
+- o mesmo row grain e record key;
+- um semantic concept nomeável;
+- semânticas compatíveis de event-time, availability, janela e late-data;
+- refresh, freshness SLO, serving mode, retenção e ciclo de backfill
+  compatíveis;
+- ownership, classificação de acesso e política de evolução de schema
+  compatíveis.
 
-Use source tables and CTEs as lineage evidence, not automatic boundaries. The same source may fan out into several grains and Feature Groups; one Feature Group may depend on several sources. Keep window variants together when the facts, filters, grain, cadence, ownership, and governance are compatible. Split them when those operational or semantic contracts diverge.
+Use source tables e CTEs como evidência de lineage, não como fronteiras
+automáticas. A mesma fonte pode produzir vários grãos e Feature Groups; um
+Feature Group pode depender de várias fontes. Mantenha variantes de janela juntas
+quando fatos, filtros, grão, cadência, ownership e governança forem compatíveis.
+Separe-as quando esses contratos operacionais ou semânticos divergirem.
 
-Treat DDD as a supporting lens for language, ownership, and bounded contexts. Do not let DDD replace the entity, grain, time, operation, and governance tests.
+Trate DDD como uma lente complementar para linguagem, ownership e bounded
+contexts. Não permita que DDD substitua os testes de entidade, grão, tempo,
+operação e governança.
 
-## Preserve uncertainty
+## Preserve as incertezas
 
-- Never invent business definitions from a column alias alone.
-- Label facts as **confirmed by SQL**, **inferred**, or **needs confirmation**.
-- Continue with a useful provisional design when missing information is non-blocking.
-- Mark a contract `draft` while entity, grain, target separation, event time, availability semantics, owner, or freshness requirements remain unresolved.
-- Call a contract `publishable` only when the critical decisions are explicit and the proposed validation checks can enforce them.
+- Nunca invente definições de negócio a partir apenas de um column alias.
+- Classifique fatos como **confirmed by SQL**, **inferred** ou **needs
+  confirmation**.
+- Continue com um design provisório útil quando a informação ausente não for
+  bloqueante.
+- Marque um contrato como `draft` enquanto entidade, grão, separação de target,
+  event time, semântica de availability, owner ou requisitos de freshness
+  permanecerem indefinidos.
+- Chame um contrato de `publishable` somente quando as decisões críticas forem
+  explícitas e os testes de validação propostos puderem verificá-las.
 
-## Creation safety
+## Segurança na criação
 
-- Do not execute source SQL, create tables, deploy pipelines, or mutate a feature store unless the user explicitly requests that action and the target environment is identified.
-- Before platform-specific creation, show or create the complete proposed contract, list assumptions, and identify destructive or backfill implications.
-- Keep model-specific learned transformations in the model pipeline unless they have an independently owned, reusable domain meaning.
-- Never publish a future outcome or label as a feature.
+- Não execute o SQL de origem, crie tabelas, faça deploy de pipelines nem
+  altere um feature store, a menos que o usuário solicite explicitamente a ação
+  e identifique o ambiente de destino.
+- Antes de uma criação específica de plataforma, mostre ou crie o contrato
+  completo, liste as hipóteses e identifique implicações destrutivas ou de
+  backfill.
+- Mantenha transformações aprendidas e específicas do modelo no model pipeline,
+  salvo quando tiverem significado de domínio reutilizável e ownership próprio.
+- Nunca publique um outcome futuro ou label como feature.
 
-## Quality bar
+## Critério de qualidade
 
-Reject designs that hide grain, equate one entity with one giant group, create one group per model or time window without an operational reason, omit point-in-time rules, or present unresolved assumptions as facts. The final result must make every grouping and split decision traceable to evidence in the SQL or to an explicitly identified requirement.
+Rejeite designs que escondam o grão, equacionem uma entidade a um único grupo
+gigante, criem um grupo por modelo ou janela sem motivo operacional, omitam
+regras de point-in-time ou apresentem hipóteses não resolvidas como fatos. A
+entrega final deve permitir rastrear cada decisão de agrupamento ou separação
+até uma evidência da SQL ou a um requisito identificado explicitamente.

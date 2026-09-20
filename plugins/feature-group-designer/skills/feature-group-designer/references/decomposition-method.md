@@ -1,112 +1,130 @@
-# SQL-to-Feature-Group decomposition method
+# Método de decomposição SQL-to-Feature-Group
 
-Use this method for every SQL analysis. Its purpose is to make the design reproducible: another reviewer should be able to trace a proposed Feature Group back to the SQL and understand every assumption.
+Use este método em toda análise de SQL. O objetivo é tornar o design
+reproduzível: outro revisor deve conseguir rastrear um Feature Group proposto
+até a query e entender cada hipótese.
 
-## 1. Frame the decision
+## 1. Enquadre a decisão
 
-Record, when available:
+Registre, quando disponível:
 
-- business decision or prediction being supported;
-- model or consumer name, as consumption metadata rather than a group boundary;
-- final output row meaning;
-- prediction or observation timestamp;
-- target/label and its outcome window;
-- required batch or online serving path;
-- expected refresh, freshness, history, retention, and backfill behavior.
+- decisão de negócio ou previsão apoiada;
+- nome do modelo ou consumidor, como metadata de consumo e não como fronteira;
+- significado de uma linha da saída final;
+- timestamp de prediction ou observation;
+- target/label e sua outcome window;
+- caminho de serving batch ou online necessário;
+- refresh, freshness, histórico, retenção e backfill esperados.
 
-Do not stop merely because some context is absent. Continue with provisional assumptions and add them to the open-decisions register. Stop before claiming a publishable contract if an unresolved item can change entity, grain, target separation, point-in-time correctness, access policy, or physical implementation.
+Não pare apenas porque algum contexto está ausente. Continue com hipóteses
+provisórias e inclua-as no registro de decisões em aberto. Pare antes de chamar
+um contrato de `publishable` se um item não resolvido puder mudar entidade,
+grão, separação do target, point-in-time correctness, política de acesso ou
+implementação física.
 
-## 2. Parse the SQL by role
+## 2. Analise o SQL por papel
 
-Read the query from source CTEs to the final projection, but inventory the final output first. For each final expression, record:
+Leia a query das CTEs de origem até a projeção final, mas faça primeiro o
+inventário da saída final. Para cada expressão final, registre:
 
-| Field | Meaning |
+| Campo | Significado |
 |---|---|
-| output_name | Final alias or column name |
-| role | identifier, time, feature, target, request-time, control, or other |
-| expression | Normalized SQL expression |
-| sources | Physical relations and source columns |
-| filters | Status, exclusion, cohort, and quality predicates |
-| joins | Join path and cardinality assumption |
-| aggregation | Function, grouping keys, distinct behavior |
-| window | Lookback or outcome window and boundary convention |
-| entity | Subject described by the value |
-| grain | Exact row meaning at this calculation stage |
-| temporal fields | Event, availability, computation, and reference times |
-| status | confirmed, inferred, or needs confirmation |
+| `output_name` | Alias ou coluna final |
+| `role` | identifier, time, feature, target, request-time, control ou outro |
+| `expression` | Expressão SQL normalizada |
+| `sources` | Relações físicas e colunas de origem |
+| `filters` | Predicados de status, exclusão, coorte e qualidade |
+| `joins` | Caminho do join e hipótese de cardinalidade |
+| `aggregation` | Função, chaves de agrupamento e uso de distinct |
+| `window` | Lookback ou outcome window e seus limites |
+| `entity` | Sujeito descrito pelo valor |
+| `grain` | Significado exato da linha nessa etapa |
+| `temporal fields` | Event, availability, computation e reference times |
+| `status` | confirmed, inferred ou needs confirmation |
 
-Do not assume every selected numeric expression is a feature. IDs, partition fields, labels, sample weights, training-only controls, and audit columns have different roles.
+Não presuma que toda expressão numérica selecionada seja uma feature. IDs,
+campos de partição, labels, sample weights, controles de treinamento e audit
+columns têm papéis diferentes.
 
-## 3. Trace lineage and semantic filters
+## 3. Rastreie lineage e filtros semânticos
 
-For every candidate feature, follow aliases and dependencies through nested CTEs and subqueries until reaching source columns or unresolved external objects. Capture:
+Para cada feature candidata, siga aliases e dependências por CTEs aninhadas e
+subqueries até chegar às colunas de origem ou a objetos externos não resolvidos.
+Capture:
 
-- all contributing sources and columns;
-- join keys, join type, expected cardinality, and possible fan-out;
-- `WHERE`, `ON`, `HAVING`, and conditional aggregation predicates;
-- deduplication and record-selection logic;
-- aggregations, window functions, and ordering;
-- default values, casts, units, timezone conversions, and null treatment;
-- dependencies on other derived expressions.
+- todas as fontes e colunas contribuintes;
+- join keys, tipo de join, cardinalidade esperada e possível fan-out;
+- predicados em `WHERE`, `ON`, `HAVING` e agregações condicionais;
+- deduplicação e lógica de seleção de registro;
+- agregações, window functions e ordenação;
+- defaults, casts, unidades, conversões de timezone e tratamento de nulo;
+- dependências de outras expressões derivadas.
 
-Treat a filter such as `status = 'approved'` or exclusion of reversals as part of the feature definition, not an incidental implementation detail.
+Trate um filtro como `status = 'approved'` ou a exclusão de reversões como parte
+da definição da feature, não como detalhe incidental de implementação.
 
-## 4. Build the grain ledger before clustering
+## 4. Construa o grain ledger antes de agrupar
 
-Write every grain as both a key and a sentence. Include at least the relevant source/CTE relations, the final model dataset, and each candidate Feature Group.
+Escreva cada grão como uma chave e como uma frase. Inclua pelo menos as relações
+de origem/CTE relevantes, o model dataset final e cada Feature Group candidato.
 
-Example:
+Exemplo:
 
-| Relation or candidate | Entity | Record key | One row means | Evidence |
+| Relação ou candidato | Entidade | Record key | Uma linha representa | Evidência |
 |---|---|---|---|---|
-| orders | order | `order_id` | one order | source key or deduplication |
-| user_store_daily | user-store | `user_id + store_id + reference_date` | one user's behavior for one store on one date | `GROUP BY` |
-| model_dataset | user | `user_id + prediction_timestamp` | one prediction opportunity for a user | final select |
+| `orders` | order | `order_id` | um pedido | chave de origem ou deduplicação |
+| `user_store_daily` | user-store | `user_id + store_id + reference_date` | o comportamento de um usuário em uma loja em uma data | `GROUP BY` |
+| `model_dataset` | user | `user_id + prediction_timestamp` | uma oportunidade de previsão para um usuário | select final |
 
-Then make the fan-out explicit. A single source may produce, for example, user aggregates, user-store aggregates, order operational state, and store aggregates. Do not collapse these merely because the same table supplied them.
+Torne o fan-out explícito. Uma mesma fonte pode produzir, por exemplo,
+agregados de usuário, agregados user-store, estado operacional do pedido e
+agregados de loja. Não os colapse apenas porque vieram da mesma tabela.
 
-Block or flag the design when:
+Bloqueie ou sinalize o design quando:
 
-- the proposed key is not unique at the declared grain;
-- a join can multiply rows before aggregation without deliberate handling;
-- a dimension changes over time but the query always uses its current value;
-- a composite entity is reduced to one component of its key;
-- the timestamp is necessary to identify historical records but omitted from the record key.
+- a chave proposta não for única no grão declarado;
+- um join puder multiplicar linhas antes da agregação sem tratamento deliberado;
+- uma dimensão mudar ao longo do tempo, mas a query sempre usar seu valor atual;
+- uma entidade composta for reduzida a apenas um componente da chave;
+- o timestamp for necessário para identificar registros históricos, mas estiver
+  ausente da record key.
 
-## 5. Create feature cards
+## 5. Crie feature cards
 
-Create one card per candidate feature with:
+Crie um card para cada feature candidata com:
 
-- name and plain-language definition;
-- role and feature kind: base, aggregate, derived, or request-time;
-- entity, business identity, record grain, and lookup key;
-- source columns, transformation, filters, and units;
-- lookback window, inclusivity, timezone, and empty-window behavior;
+- nome e definição em linguagem simples;
+- papel e tipo: base, aggregate, derived ou request-time;
+- entidade, business identity, record grain e lookup key;
+- colunas de origem, transformação, filtros e unidades;
+- lookback window, inclusividade, timezone e comportamento de janela vazia;
 - event/reference/availability/computation timestamps;
-- update trigger, cadence, freshness requirement, and late-event policy;
-- null/default policy and expected valid range;
-- sensitivity or access classification;
-- owner and known consumers;
-- upstream dependencies and reuse hypothesis;
-- evidence status and open questions.
+- trigger de atualização, cadência, requisito de freshness e late-event policy;
+- política de nulo/default e intervalo válido esperado;
+- classificação de sensibilidade ou acesso;
+- owner e consumidores conhecidos;
+- dependências upstream e hipótese de reuso;
+- status da evidência e perguntas em aberto.
 
-If the SQL cannot establish a business definition, describe the expression precisely and ask for the domain meaning. Do not manufacture one.
+Se o SQL não permitir estabelecer uma definição de negócio, descreva a expressão
+com precisão e peça o significado de domínio. Não o fabrique.
 
-## 6. Generate and split candidates
+## 6. Gere e separe candidatos
 
-Cluster in this order:
+Agrupe nesta ordem:
 
-1. entity and business identity;
-2. record grain and key;
+1. entidade e business identity;
+2. record grain e key;
 3. semantic concept;
-4. temporal compatibility;
-5. operational compatibility;
-6. governance and ownership compatibility;
-7. reuse and dependency shape.
+4. compatibilidade temporal;
+5. compatibilidade operacional;
+6. governança e ownership;
+7. formato de reuso e dependências.
 
-Source proximity is not a required match. Use it later to plan pipelines and lineage.
+A proximidade na fonte não é requisito de compatibilidade. Use-a depois para
+planejar pipelines e lineage.
 
-For each pair or family of features, evaluate:
+Para cada par ou família de features, avalie:
 
 ```text
 same_entity?
@@ -118,65 +136,77 @@ compatible_governance_and_owner?
 shared_computation_or_reuse?
 ```
 
-Different entity or grain normally forces a split. Semantic, temporal, operational, or governance differences force a split when sharing a contract would couple incompatible lifecycle or access requirements.
+Entidade ou grão diferentes normalmente obrigam uma separação. Diferenças
+semânticas, temporais, operacionais ou de governança também obrigam a separação
+quando compartilhar um contrato acoplar ciclos de vida ou acesso incompatíveis.
 
-## 7. Handle temporal semantics
+## 7. Trate as semânticas temporais
 
-For each Feature Group, define:
+Para cada Feature Group, defina:
 
-- the timestamp to which the value is valid (`event_timestamp` or equivalent);
-- the timestamp at which it became knowable (`available_at` or an explicit conservative lag policy) when late arrival matters;
-- the observation window and exact start/end inclusivity;
-- timezone and calendar rules;
-- late-event, correction, and recomputation policy;
-- history/backfill policy;
-- online precedence rule for out-of-order writes, if applicable.
+- timestamp ao qual o valor é válido (`event_timestamp` ou equivalente);
+- timestamp em que se tornou conhecível (`available_at` ou uma lag policy
+  conservadora explícita) quando a chegada puder atrasar;
+- observation window e inclusão/exclusão exata dos limites;
+- regras de timezone e calendário;
+- política de late-event, correção e recomputação;
+- política de histórico/backfill;
+- precedência online para writes out-of-order, se aplicável.
 
-For a training row at prediction time `T`, the safe retrieval rule is conceptually:
+Para uma training row no prediction time `T`, a regra segura de recuperação é
+conceitualmente:
 
 ```text
 feature.event_timestamp <= T
-and feature.available_at <= T  # when availability can lag validity
+and feature.available_at <= T  # quando availability pode atrasar a validade
 choose the latest permitted version for the entity and grain
 ```
 
-Outcome windows belong to targets, not features. A value computed from events after `T` is a label or leakage unless the prediction is explicitly made after those events.
+Outcome windows pertencem a targets, não a features. Um valor calculado a partir
+de eventos posteriores a `T` é label ou leakage, salvo quando a previsão for
+explicitamente feita depois desses eventos.
 
-## 8. Place derived features
+## 8. Posicione features derivadas
 
-Use the following decision:
+Use esta decisão:
 
-| Situation | Placement |
+| Situação | Posicionamento |
 |---|---|
-| Stable reusable domain rule with compatible owner and lifecycle | Same Feature Group or a domain-owned derived group |
-| Cross-family derivation with independent meaning and multiple consumers | Derived Feature Group with explicit dependencies |
-| Learned weights or experiment-specific formula | Model pipeline/artifact |
-| Requires data known only at inference request | Request-time transformation reproduced consistently for training |
+| Regra de domínio estável e reutilizável, com owner e ciclo compatíveis | Mesmo Feature Group ou derived group do domínio |
+| Derivação entre famílias, com significado próprio e vários consumidores | Derived Feature Group com dependências explícitas |
+| Pesos aprendidos ou fórmula específica de experimento | Model pipeline/artifact |
+| Requer dados conhecidos apenas no inference request | Request-time transformation reproduzida de forma consistente no treinamento |
 
-Record the dependency graph from source feature to aggregate to derived feature to consumer.
+Registre o grafo de dependências da feature de origem ao agregado, à feature
+derivada e ao consumidor.
 
-## 9. Validate the decomposition
+## 9. Valide a decomposição
 
-Require evidence or a proposed test for:
+Exija evidência ou um teste proposto para:
 
-- uniqueness at every declared grain;
-- join cardinality and absence of accidental fan-out;
-- schema, type, unit, null, and valid-range conformance;
-- boundary cases for every window;
-- no events or late-arriving knowledge from after prediction time;
-- equivalence between the decomposed historical dataset and the original query on representative samples;
-- idempotent backfill and handling of out-of-order events;
-- offline/online parity when online serving is required;
-- versioned semantic changes and known consumer impact.
+- unicidade em cada grão declarado;
+- cardinalidade dos joins e ausência de fan-out acidental;
+- conformidade de schema, tipo, unidade, nulo e intervalo válido;
+- casos de limite de cada janela;
+- ausência de eventos ou conhecimento tardio posterior ao prediction time;
+- equivalência entre o dataset histórico decomposto e a query original em
+  amostras representativas;
+- backfill idempotente e tratamento de eventos out-of-order;
+- offline/online parity quando houver serving online;
+- mudanças semânticas versionadas e impacto conhecido nos consumidores.
 
-Static analysis can propose these checks but cannot claim their results without execution against representative data.
+A análise estática pode propor esses testes, mas não pode afirmar seus resultados
+sem execução contra dados representativos.
 
-## 10. Rate readiness
+## 10. Classifique o readiness
 
-Use exactly one status for each proposed group:
+Use exatamente um status para cada grupo proposto:
 
-- `draft`: critical assumptions or definitions remain open;
-- `ready_for_review`: structure and contract are complete enough for domain and platform review, but data validation or approval remains;
-- `publishable`: critical semantics are confirmed and the implementation has passed the declared data and temporal checks.
+- `draft`: hipóteses ou definições críticas continuam abertas;
+- `ready_for_review`: estrutura e contrato estão completos o suficiente para
+  revisão de domínio e plataforma, mas ainda falta validação de dados ou
+  aprovação;
+- `publishable`: semânticas críticas estão confirmadas e a implementação passou
+  pelos testes de dados e temporais declarados.
 
-Never infer `publishable` from SQL structure alone.
+Nunca infira `publishable` apenas pela estrutura da SQL.

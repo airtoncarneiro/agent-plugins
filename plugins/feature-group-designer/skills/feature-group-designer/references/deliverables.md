@@ -1,76 +1,85 @@
-# Deliverable format
+# Formato das entregas
 
-Use the smallest set of deliverables that satisfies the request. For an ordinary design request, present sections 1 through 8 below. For artifact creation, write equivalent files and summarize their paths.
+Use o menor conjunto de entregas que satisfaça a solicitação. Para um pedido
+comum de Design, apresente as seções 1 a 8 abaixo. Para criação de artefatos,
+escreva arquivos equivalentes e resuma seus caminhos.
 
-## 1. Executive decision
+## 1. Decisão executiva
 
-State:
+Declare:
 
-- how many Feature Groups are proposed;
-- their names and one-line purposes;
-- the final dataset grain;
-- whether the result is `draft`, `ready_for_review`, or `publishable`;
-- the most important blockers or assumptions.
+- quantos Feature Groups foram propostos;
+- seus nomes e propósitos em uma linha;
+- o grão do dataset final;
+- se o resultado está `draft`, `ready_for_review` ou `publishable`;
+- os bloqueios ou hipóteses mais importantes.
 
-## 2. Query inventory
+## 2. Inventário da query
 
-Provide one row for every final output expression:
+Forneça uma linha para cada expressão da saída final:
 
 | Output | Role | Expression/source | Entity | Grain | Window/time | Evidence status |
 |---|---|---|---|---|---|---|
 
-Targets, keys, timestamps, controls, and non-feature fields remain visible even though they are not published features.
+Targets, chaves, timestamps, controles e campos non-feature permanecem visíveis,
+mesmo que não sejam publicados como features.
 
-## 3. Grain contracts and comparison
+## 3. Contratos de grão e comparação
 
-Provide an explicit table:
+Forneça uma tabela explícita:
 
-| Candidate | Entity | Record keys | One row means | Compatible with |
+| Candidate | Entity | Record keys | Uma linha representa | Compatible with |
 |---|---|---|---|---|
 
-Show every material grain produced from the same source. Do not bury grain inside prose.
+Mostre cada grão material produzido pela mesma fonte. Não esconda o grão em
+prosa.
 
-## 4. Proposed Feature Groups
+## 4. Feature Groups propostos
 
-For each group, include:
+Para cada grupo, inclua:
 
-- entity, business key, record grain, lookup key;
-- semantic purpose;
+- entidade, business key, record grain e lookup key;
+- propósito semântico;
 - features;
-- event and availability timestamps;
-- cadence, freshness, offline/online requirement;
-- owner/governance if known;
-- source lineage;
+- event e availability timestamps;
+- cadência, freshness, requisito offline/online;
+- owner/governança, quando conhecidos;
+- lineage da fonte;
 - readiness status.
 
-## 5. Boundary decision log
+## 5. Registro de decisões de fronteira
 
-Explain why features were joined or split using this table:
+Explique por que as features foram unidas ou separadas usando esta tabela:
 
 | Decision | Features/groups | Evidence | Rule applied | Confidence |
 |---|---|---|---|---|
 
-Include rejected alternatives such as one group per model, source table, CTE, entity, or window when they were plausible from the input.
+Inclua alternativas rejeitadas, como um grupo por model, source table, CTE,
+entidade ou janela, quando forem plausíveis a partir da entrada.
 
-## 6. Target and dependency separation
+## 6. Separação de target e dependências
 
-List:
+Liste:
 
-- labels/outcomes excluded from Feature Groups;
-- base, aggregated, derived, and request-time features;
-- cross-group dependencies and model-specific transformations.
+- labels/outcomes excluídos dos Feature Groups;
+- features base, agregadas, derivadas e request-time;
+- dependências entre grupos e transformações específicas do modelo.
 
-## 7. Temporal and data-quality validation plan
+## 7. Plano de validação temporal e de qualidade
 
-Specify executable or testable checks for uniqueness, fan-out, nulls, windows, late knowledge, leakage, equivalence to the original query, backfill, and serving parity. Clearly distinguish proposed tests from tests actually executed.
+Especifique verificações executáveis ou testáveis para unicidade, fan-out, nulos,
+limites de janela, conhecimento tardio, leakage, equivalência com a query
+original, backfill e serving parity. Diferencie claramente testes propostos de
+testes realmente executados.
 
-## 8. Open decisions
+## 8. Decisões em aberto
 
-Prioritize only questions that can change the contract. For each, state the provisional assumption and the consequence of a different answer.
+Priorize somente perguntas que possam alterar o contrato. Para cada uma, declare
+a hipótese provisória e a consequência de uma resposta diferente.
 
-## 9. Artifacts for creation requests
+## 9. Artefatos para solicitações de Create
 
-Unless the user specifies another layout, create:
+A menos que o usuário especifique outro layout, crie:
 
 ```text
 feature-groups/
@@ -83,13 +92,15 @@ feature-groups/
     └── <feature-group-name>-checks.md
 ```
 
-The SQL transformation may remain a clearly marked skeleton when source schemas or target-platform semantics are missing. Never disguise placeholders or assumptions as deployable code.
+A transformação SQL pode permanecer como um skeleton claramente marcado quando
+schemas de origem ou semântica da plataforma de destino estiverem ausentes.
+Nunca disfarce placeholders ou hipóteses como código deployable.
 
 ## 10. Handoff
 
-End with:
+Finalize com:
 
-- artifacts created or reviewed;
-- validation performed and not performed;
+- artefatos criados ou revisados;
+- validações realizadas e não realizadas;
 - readiness status;
-- exact next approval or evidence needed.
+- próxima aprovação ou evidência necessária, de forma exata.
