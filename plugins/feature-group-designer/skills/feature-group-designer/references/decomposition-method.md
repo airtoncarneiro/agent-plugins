@@ -106,6 +106,23 @@ Crie um card para cada feature candidata com:
 - dependências upstream e hipótese de reuso;
 - status da evidência e perguntas em aberto.
 
+Consolide os cards em uma matriz de compatibilidade antes de formar os grupos.
+Use o grão como significado da linha, não apenas como o nome da entidade, e
+registre o campo temporal em vez de classificá-lo genericamente como snapshot:
+
+| Feature | Entity | Record grain | Semantic concept | Window | Event timestamp | Refresh | Sources |
+|---|---|---|---|---|---|---|---|
+| `dias_desde_ativacao` | usuario | um snapshot por usuário e reference time | ciclo de vida | — | `snapshot_timestamp` | diário | `contas` |
+| `quantidade_pedidos_30d` | usuario | um snapshot por usuário e reference time | comportamento de compras | 30d | `snapshot_timestamp` | horário | `pedidos` |
+| `quantidade_pedidos_90d` | usuario | um snapshot por usuário e reference time | comportamento de compras | 90d | `snapshot_timestamp` | horário | `pedidos` |
+| `valor_medio_pedido_30d` | usuario | um snapshot por usuário e reference time | comportamento de compras | 30d | `snapshot_timestamp` | horário | `pedidos` |
+| `quantidade_transferencias_7d` | usuario | um snapshot por usuário e reference time | transferências | 7d | `snapshot_timestamp` | 5 min | `transferencias` |
+| `valor_transferencias_7d` | usuario | um snapshot por usuário e reference time | transferências | 7d | `snapshot_timestamp` | 5 min | `transferencias` |
+
+Use a matriz para tornar candidatos de agrupamento e incompatibilidades
+visíveis. Ela não substitui os feature cards nem implica separação apenas porque
+as fontes são diferentes.
+
 Se o SQL não permitir estabelecer uma definição de negócio, descreva a expressão
 com precisão e peça o significado de domínio. Não o fabrique.
 
@@ -123,6 +140,47 @@ Agrupe nesta ordem:
 
 A proximidade na fonte não é requisito de compatibilidade. Use-a depois para
 planejar pipelines e lineage.
+
+### Identifique a coesão semântica
+
+Depois de estabelecer entidade e grão, pergunte qual aspecto do sujeito cada
+feature descreve.
+
+Por exemplo, no mesmo grão de usuário, `dias_desde_cadastro`,
+`dias_desde_primeiro_pedido` e `fez_pedido_primeiros_14d` podem formar o
+candidato `usuario_ciclo_vida`. Já `quantidade_pedidos_28d`,
+`valor_medio_cesta_28d` e `quantidade_itens_28d` podem formar o candidato
+`usuario_comportamento_compras`.
+
+Um Feature Group deve possuir coesão semântica, não ser apenas um agrupamento
+físico de colunas. Uma decomposição semântica candidata pode ser:
+
+```text
+usuario_id
+│
+├── Perfil
+│     ├── regiao_cadastro
+│     └── data_cadastro
+│
+├── Comportamento de compras
+│     ├── quantidade_pedidos_14d
+│     ├── valor_compras_14d
+│     ├── quantidade_pedidos_84d
+│     └── valor_compras_84d
+│
+├── Engajamento no aplicativo
+│     ├── categoria_loja_preferida
+│     └── duracao_media_sessao_14d
+│
+└── Preferências de entrega
+      └── quantidade_enderecos_salvos
+```
+
+Essa decomposição identifica clusters semânticos candidatos; ela ainda não
+afirma que cada cluster será um Feature Group. Como entidade e grão já foram
+estabelecidos, teste em seguida a compatibilidade temporal, operacional, de
+governança, de ownership e de reuso. Use a origem para lineage e planejamento
+da transformação, não como fronteira automática.
 
 Para cada par ou família de features, avalie:
 
@@ -179,6 +237,30 @@ Use esta decisão:
 
 Registre o grafo de dependências da feature de origem ao agregado, à feature
 derivada e ao consumidor.
+
+### Visualize o catálogo e as dependências
+
+Use uma visão arquitetural compacta para situar os grupos no domínio e tornar
+as dependências explícitas, sem repetir o inventário completo de features:
+
+```text
+Domínio: experiencia_usuario
+Entidade: usuario (`usuario_id`)
+│
+├── FG: usuario_perfil
+│
+├── FG: usuario_comportamento_compras
+│
+├── FG: usuario_engajamento_aplicativo
+│
+└── FG derivado: usuario_pontuacao_atividade
+      ├── depende de: usuario_perfil
+      └── depende de: usuario_comportamento_compras
+```
+
+Essa visão organiza o catálogo e explicita dependências. Ela não substitui os
+contratos individuais de grão, tempo, operação e governança, nem transforma
+domínio, entidade ou fonte em fronteiras automáticas de Feature Group.
 
 ## 9. Valide a decomposição
 

@@ -24,6 +24,11 @@ Forneça uma linha para cada expressão da saída final:
 Targets, chaves, timestamps, controles e campos non-feature permanecem visíveis,
 mesmo que não sejam publicados como features.
 
+Para solicitações de Design, apresente também a matriz de compatibilidade dos
+feature cards definida em [decomposition-method.md](decomposition-method.md),
+com entidade, record grain, conceito semântico, janela, event timestamp,
+refresh e fontes de cada feature candidata.
+
 ## 3. Contratos de grão e comparação
 
 Forneça uma tabela explícita:
