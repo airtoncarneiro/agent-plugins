@@ -1,68 +1,58 @@
-# Agent Plugins Universal Repository
+# Agent Plugins Universal
 
-Este repositório contém um plugin portátil e reutilizável compatível com o padrão
-[Agent Plugins](https://agent-plugins.org/). A estrutura foi organizada para manter
-o núcleo universal enxuto, independente de editor ou runtime específico.
+Coleção de plugins portáteis e reutilizáveis para agentes de IA. O repositório
+mantém os plugins independentes de editor, fornecedor ou runtime específico,
+seguindo o padrão [Agent Plugins](https://agent-plugins.org/).
 
 ## Objetivo
 
-A fonte canônica do plugin fica em `plugins/`. Cada subpasta representa um plugin
-independente, com manifesto, skills, referências e templates de saída.
+Disponibilizar plugins versionados, com manifestos, skills e materiais de apoio
+que possam ser instalados e reutilizados em diferentes ambientes de agentes.
+
+O catálogo dos plugins disponíveis está em [`plugins/README.md`](plugins/README.md).
 
 ## Estrutura
 
 ```text
 .
 ├── README.md
-├── examples/
-│   └── query_01.sql
 ├── plugins/
-│   └── feature-group-designer/
+│   ├── README.md
+│   └── <plugin-name>/
 │       ├── plugin.json
 │       └── skills/
-│           └── feature-group-designer/
-│               ├── SKILL.md
-│               ├── references/
-│               │   ├── decomposition-method.md
-│               │   ├── contract-guide.md
-│               │   └── deliverables.md
-│               └── assets/
-│                   └── feature-group-contract.yaml
 ```
 
-## Plugin atual
+Cada subpasta de `plugins/` é um plugin independente. Seu `plugin.json` é o
+manifesto, e as subpastas `skills/`, `references/` e `assets/` contêm os
+recursos necessários para seu funcionamento.
 
-O plugin incluído neste repositório é `feature-group-designer`.
+## Instalação e uso
 
-Ele recebe uma query SQL e ajuda a:
+1. Clone ou baixe este repositório:
 
-- inventorizar colunas e funções;
-- identificar entidade, chave e grão;
-- rastrear joins, filtros, agregações e janelas;
-- separar feature, target, identificador e controle;
-- propor Feature Groups reutilizáveis;
-- documentar contratos e riscos de point-in-time.
+   ```bash
+   git clone https://github.com/airtoncarneiro/agent-plugins.git
+   ```
 
-## Como usar
+2. Escolha um plugin no [catálogo](plugins/README.md).
+3. Instale ou registre a pasta do plugin no runtime de agentes utilizado,
+   conforme o procedimento desse runtime.
+4. Consulte o `SKILL.md` e as referências do plugin para conhecer suas entradas,
+   modos de uso e entregáveis.
 
-1. Registre ou instale a pasta `plugins/feature-group-designer/` como um Agent Plugin.
-2. Use a skill a partir do manifesto do plugin.
-3. Forneça a query SQL e escolha o modo de trabalho: Analyze, Design, Create ou Review.
-
-## Princípios
-
-- o núcleo do repositório deve ser portátil e vendor-neutral;
-- o plugin deve ser independente de editor;
-- o grão, a semântica temporal e a governança devem ser explícitos;
-- exemplos são documentação e testes estruturais, não execução em produção;
-- a definição canônica do plugin permanece em `plugins/`.
+Os plugins são definidos de forma independente. Portanto, a instalação pode
+ser feita para um plugin específico, sem exigir a instalação de toda a coleção.
 
 ## Contribuição
 
-Para adicionar uma nova skill:
+Para adicionar um plugin:
 
-1. criar uma nova pasta em `plugins/<plugin-name>/`;
-2. manter `plugin.json` na raiz do plugin;
-3. criar `skills/<skill-name>/SKILL.md`;
-4. adicionar `references/` e `assets/` quando necessário;
-5. manter o README e a documentação alinhados ao comportamento real da skill.
+1. crie uma pasta em `plugins/<plugin-name>/`;
+2. mantenha um `plugin.json` válido na raiz do plugin;
+3. adicione suas skills em `skills/<skill-name>/SKILL.md`;
+4. inclua `references/` e `assets/` quando necessário;
+5. atualize o [catálogo de plugins](plugins/README.md).
+
+Mantenha a documentação alinhada ao comportamento real de cada plugin e evite
+acoplar os recursos a um editor ou fornecedor específico sem necessidade.
