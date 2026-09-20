@@ -1,0 +1,13 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "feature-group-designer",
+  "version": "0.1.0",
+  "description": "Designs vendor-neutral feature groups, specifications, and contracts from data scientist SQL queries.",
+  "keywords": [
+    "feature-group",
+    "feature-store",
+    "machine-learning",
+    "sql",
+    "data-contract"
+  ]
+}

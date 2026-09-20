@@ -1,0 +1,113 @@
+contract_version: "1.0"
+status: draft # draft | ready_for_review | publishable
+
+feature_group:
+  name: needs_confirmation
+  description: needs_confirmation
+  domain: needs_confirmation
+  semantic_concept: needs_confirmation
+  schema_version: "0.1.0"
+
+ownership:
+  business_owner: needs_confirmation
+  technical_owner: needs_confirmation
+
+entity:
+  name: needs_confirmation
+  business_keys:
+    - needs_confirmation
+  identity_notes: needs_confirmation
+
+grain:
+  description: needs_confirmation
+  record_keys:
+    - needs_confirmation
+  uniqueness_expectation: "exactly one row per declared record key"
+
+lookup:
+  keys:
+    - needs_confirmation
+  historical_reference_time: needs_confirmation
+
+time:
+  event_timestamp: needs_confirmation
+  available_at: needs_confirmation
+  computed_at: needs_confirmation
+  timezone: UTC
+  window_boundary: needs_confirmation
+  late_event_policy: needs_confirmation
+  backfill_policy: needs_confirmation
+  retention: needs_confirmation
+
+operation:
+  update_mode: needs_confirmation
+  refresh_cadence: needs_confirmation
+  freshness_slo: needs_confirmation
+  idempotency_key:
+    - needs_confirmation
+  out_of_order_precedence: needs_confirmation
+
+serving:
+  offline: true
+  online: needs_confirmation
+  online_ttl: null
+
+governance:
+  access_classification: needs_confirmation
+  contains_pii: needs_confirmation
+  allowed_consumers: []
+  deprecation_policy: needs_confirmation
+
+lineage:
+  sources: []
+  transformation_reference: needs_confirmation
+  upstream_feature_groups: []
+
+features:
+  - name: needs_confirmation
+    type: needs_confirmation
+    kind: needs_confirmation # base | aggregate | derived | request_time
+    definition: needs_confirmation
+    expression: needs_confirmation
+    sources: []
+    filters: []
+    unit: needs_confirmation
+    window: null
+    grain: needs_confirmation
+    dependencies: []
+    null_policy: needs_confirmation
+    default_value: null
+    sensitivity: needs_confirmation
+    validation_rules: []
+
+quality:
+  blocking_checks:
+    - "record keys are non-null and unique at the declared grain"
+    - "schema and types match the contract"
+    - "window boundary cases are correct"
+    - "historical retrieval uses no event or knowledge after prediction time"
+    - "decomposed calculations match the approved baseline on representative data"
+  monitored_metrics:
+    - freshness
+    - completeness
+    - coverage
+    - distribution_drift
+    - late_event_rate
+
+consumers: []
+
+change_policy:
+  compatibility: needs_confirmation
+  semantic_change_requires_version: true
+  breaking_changes:
+    - grain
+    - record_keys
+    - type
+    - unit
+    - business_filters
+    - window
+
+evidence:
+  confirmed_by_sql: []
+  inferred: []
+  needs_confirmation: []
