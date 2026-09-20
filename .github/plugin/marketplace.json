@@ -1,0 +1,18 @@
+{
+  "name": "airton-agent-plugins",
+  "metadata": {
+    "description": "Airton Carneiro Agent Plugins",
+    "version": "1.0.0"
+  },
+  "owner": {
+    "name": "Airton Carneiro"
+  },
+  "plugins": [
+    {
+      "name": "feature-group-designer",
+      "description": "Designs vendor-neutral feature groups, specifications, and contracts from data scientist SQL queries.",
+      "version": "0.1.0",
+      "source": "./plugins/feature-group-designer"
+    }
+  ]
+}
