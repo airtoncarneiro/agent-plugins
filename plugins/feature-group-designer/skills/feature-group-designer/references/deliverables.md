@@ -1,90 +1,82 @@
-# Formato das entregas
+# Deliverable format
 
-Use o menor conjunto de entregas que satisfaça a solicitação. Para um pedido
-comum de Design, apresente as seções 1 a 8 abaixo. Para criação de artefatos,
-escreva arquivos equivalentes e resuma seus caminhos.
+Use the smallest set of deliverables that satisfies the request. For an ordinary design request, present sections 1 through 8 below. For artifact creation, write equivalent files and summarize their paths.
 
-## 1. Decisão executiva
+## 1. Executive decision
 
-Declare:
+State:
 
-- quantos Feature Groups foram propostos;
-- seus nomes e propósitos em uma linha;
-- o grão do dataset final;
-- se o resultado está `draft`, `ready_for_review` ou `publishable`;
-- os bloqueios ou hipóteses mais importantes.
+- how many Feature Groups are proposed;
+- their names and one-line purposes;
+- the final dataset grain;
+- whether the result is `draft`, `ready_for_review`, or `publishable`;
+- the most important blockers or assumptions.
 
-## 2. Inventário da query
+## 2. Query inventory
 
-Forneça uma linha para cada expressão da saída final:
+Provide one row for every final output expression:
 
 | Output | Role | Expression/source | Entity | Grain | Window/time | Evidence status |
 |---|---|---|---|---|---|---|
 
-Targets, chaves, timestamps, controles e campos non-feature permanecem visíveis,
-mesmo que não sejam publicados como features.
+Targets, keys, timestamps, controls, and non-feature fields remain visible even though they are not published features.
 
-Para solicitações de Design, apresente também a matriz de compatibilidade dos
-feature cards definida em [decomposition-method.md](decomposition-method.md),
-com entidade, record grain, conceito semântico, janela, event timestamp,
-refresh e fontes de cada feature candidata.
+For every candidate feature, also state its provisional semantic family when that cannot be read unambiguously from the output name.
 
-## 3. Contratos de grão e comparação
+## 3. Grain contracts and comparison
 
-Forneça uma tabela explícita:
+Provide an explicit table:
 
-| Candidate | Entity | Record keys | Uma linha representa | Compatible with |
+| Candidate | Entity | Record keys | One row means | Compatible with |
 |---|---|---|---|---|
 
-Mostre cada grão material produzido pela mesma fonte. Não esconda o grão em
-prosa.
+Show every material grain produced from the same source. Do not bury grain inside prose.
 
-## 4. Feature Groups propostos
+## 4. Proposed Feature Groups
 
-Para cada grupo, inclua:
+For each group, include:
 
-- entidade, business key, record grain e lookup key;
-- propósito semântico;
+- entity, business key, record grain, lookup key;
+- semantic purpose;
 - features;
-- event e availability timestamps;
-- cadência, freshness, requisito offline/online;
-- owner/governança, quando conhecidos;
-- lineage da fonte;
+- event and availability timestamps;
+- cadence, freshness, offline/online requirement;
+- owner/governance if known;
+- source lineage;
 - readiness status.
 
-## 5. Registro de decisões de fronteira
+Before this list, show the semantic-family comparison used to form the groups. Shared entity or grain alone is not a merge rationale.
 
-Explique por que as features foram unidas ou separadas usando esta tabela:
+## 5. Boundary decision log
+
+Explain why features were joined or split using this table:
 
 | Decision | Features/groups | Evidence | Rule applied | Confidence |
 |---|---|---|---|---|
 
-Inclua alternativas rejeitadas, como um grupo por model, source table, CTE,
-entidade ou janela, quando forem plausíveis a partir da entrada.
+Include rejected alternatives such as one group per model, source table, CTE, entity, or window when they were plausible from the input.
 
-## 6. Separação de target e dependências
+For every merge across initially distinct semantic families, include the positive business/lifecycle evidence. If that evidence is unavailable, record a split or an open decision; do not present a broad merge as confirmed.
 
-Liste:
+## 6. Target and dependency separation
 
-- labels/outcomes excluídos dos Feature Groups;
-- features base, agregadas, derivadas e request-time;
-- dependências entre grupos e transformações específicas do modelo.
+List:
 
-## 7. Plano de validação temporal e de qualidade
+- labels/outcomes excluded from Feature Groups;
+- base, aggregated, derived, and request-time features;
+- cross-group dependencies and model-specific transformations.
 
-Especifique verificações executáveis ou testáveis para unicidade, fan-out, nulos,
-limites de janela, conhecimento tardio, leakage, equivalência com a query
-original, backfill e serving parity. Diferencie claramente testes propostos de
-testes realmente executados.
+## 7. Temporal and data-quality validation plan
 
-## 8. Decisões em aberto
+Specify executable or testable checks for uniqueness, fan-out, nulls, windows, late knowledge, leakage, equivalence to the original query, backfill, and serving parity. Clearly distinguish proposed tests from tests actually executed.
 
-Priorize somente perguntas que possam alterar o contrato. Para cada uma, declare
-a hipótese provisória e a consequência de uma resposta diferente.
+## 8. Open decisions
 
-## 9. Artefatos para solicitações de Create
+Prioritize only questions that can change the contract. For each, state the provisional assumption and the consequence of a different answer.
 
-A menos que o usuário especifique outro layout, crie:
+## 9. Artifacts for creation requests
+
+Unless the user specifies another layout, create:
 
 ```text
 feature-groups/
@@ -97,15 +89,13 @@ feature-groups/
     └── <feature-group-name>-checks.md
 ```
 
-A transformação SQL pode permanecer como um skeleton claramente marcado quando
-schemas de origem ou semântica da plataforma de destino estiverem ausentes.
-Nunca disfarce placeholders ou hipóteses como código deployable.
+The SQL transformation may remain a clearly marked skeleton when source schemas or target-platform semantics are missing. Never disguise placeholders or assumptions as deployable code.
 
 ## 10. Handoff
 
-Finalize com:
+End with:
 
-- artefatos criados ou revisados;
-- validações realizadas e não realizadas;
+- artifacts created or reviewed;
+- validation performed and not performed;
 - readiness status;
-- próxima aprovação ou evidência necessária, de forma exata.
+- exact next approval or evidence needed.
